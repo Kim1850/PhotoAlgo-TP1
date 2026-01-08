@@ -9,7 +9,7 @@ Ce script:
 3. Applique les algorithmes de balance des blancs:
    A) Manuelle (clic sur région neutre) - À IMPLÉMENTER
    B) Grey World - À IMPLÉMENTER
-   C) Proposée par la caméra - IMPLÉMENTÉ
+   C) Proposé par la caméra - IMPLÉMENTÉ
 4. Convertit en espace XYZ - IMPLÉMENTÉ
 5. Sauvegarde dans ./images_intermediaires_sec3/
 

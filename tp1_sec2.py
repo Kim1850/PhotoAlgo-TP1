@@ -5,9 +5,8 @@ TP1 Section 2: Dématriçage (Demosaicking)
 
 Ce script:
 1. Charge les mosaïques TIFF normalisées et les métadonnées depuis ./images_intermediaires_sec1/
-2. Applique le dématriçage par interpolation bilinéaire (implémenté)
+2. Applique le dématriçage par interpolation bilinéaire (À IMPLÉMENTER)
 3. Applique le dématriçage Malvar-He-Cutler 2004 (À IMPLÉMENTER)
-4. [Cycles supérieurs] Applique le dématriçage appris (À IMPLÉMENTER)
 5. Génère des images de comparaison
 6. Sauvegarde dans ./images_intermediaires_sec2/
 
