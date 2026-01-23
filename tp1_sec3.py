@@ -335,7 +335,9 @@ def generate_report(results, output_dir):
 
         content += section(basename, section_content)
 
-    discussion = """ """
+    discussion = """ 
+    AI : pour valider ce que je faisais, donc voir ce quil fait si on voulait juste vibe coder et comparer avec ce que jai fait. sinon expliquer des concepts, me donner des sources
+    """
     content += section("Discussion", discussion)
     html = html_document(
         "TP1 - Section 3",
