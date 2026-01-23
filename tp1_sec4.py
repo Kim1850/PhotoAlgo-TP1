@@ -100,8 +100,6 @@ def adjust_brightness(xyz_image, percentile=99):
     
     return adjusted
 
-    raise NotImplementedError("Ajustement de luminosité à implémenter")
-
 
 # =============================================================================
 # Opérateurs de Mappage Tonal
@@ -149,9 +147,18 @@ def tonemap_reinhard(xyz_image):
     # =========================================================================
     # TODO: Implémenter le mappage tonal de Reinhard
     # =========================================================================
-    return xyz_image.copy()/(1 + xyz_image)
+    result = xyz_image.copy()
 
-    raise NotImplementedError("Reinhard à implémenter")
+    Y = xyz_image[:, :, 1]
+    Y_mapped = Y / (1 + Y)
+    epsilon = 1e-10
+    scale = Y_mapped / (Y + epsilon)
+
+    result[:, :, 0] *= scale
+    result[:, :, 1] = Y_mapped
+    result[:, :, 2] *= scale
+
+    return result
 
 
 # =============================================================================
@@ -590,7 +597,7 @@ def generate_report(results, output_dir):
     
     # Générer le document HTML final
     html = html_document(
-        "Rapport TP1 - &lt;votre nom&gt;",
+        "Rapport TP1 - &lt;Kim St-Pierre&gt;",
         "",
         "📸",
         content,
@@ -604,6 +611,35 @@ def generate_report(results, output_dir):
 # Traitement Principal
 # =============================================================================
 
+def create_size_vs_quality_graph(compression_data, png_size, output_path, title="Taille vs Qualité"):
+    """
+    Crée un graphique montrant la taille du fichier en fonction de la qualité JPEG.
+    """
+    import matplotlib.pyplot as plt
+
+    qualities = [d['quality'] for d in compression_data]
+    sizes = [d['size_kb'] for d in compression_data]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(qualities, sizes, 'o-', linewidth=2, markersize=10, label='JPEG', color='blue')
+    plt.axhline(y=png_size, color='red', linestyle='--', linewidth=2, label='PNG (référence)')
+
+    plt.xlabel('Qualité JPEG', fontsize=14)
+    plt.ylabel('Taille du fichier (KB)', fontsize=14)
+    plt.title(title, fontsize=16, fontweight='bold')
+    plt.grid(True, alpha=0.3)
+    plt.legend(fontsize=12)
+    plt.gca().invert_xaxis()
+
+    for q, s in zip(qualities, sizes):
+        plt.annotate(f'{s:.1f} KB', (q, s), textcoords="offset points",
+                     xytext=(0, 10), ha='center', fontsize=10)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+    print(f"    → Graphique taille vs qualité: {output_path}")
 
 def process_display_encoding(
     input_dir="images_intermediaires_sec3",
@@ -693,6 +729,39 @@ def process_display_encoding(
             # - Visualiser les artefacts de compression
             # - Créer un graphique taille vs qualité
             print("  [!] Analyse JPEG à implémenter par l'étudiant")
+            qualities = [95, 75, 50, 25]
+            compression_data = []
+
+            # png without lost
+            png_path = os.path.join(output_dir, f"{basename}_reference.png")
+            Image.fromarray(img_8bit).save(png_path, "PNG")
+            png_size = os.path.getsize(png_path) / 1024
+
+            jpeg_images = {}
+            for q in qualities:
+                jpeg_path = os.path.join(output_dir, f"{basename}_reference_{q}.jpg")
+                save_jpeg(img_8bit, jpeg_path, quality=q)
+
+                # artefacts compression visualization
+                jpeg_img = np.array(Image.open(jpeg_path))
+                jpeg_images[q] = jpeg_img
+
+                jpeg_size = os.path.getsize(jpeg_path) / 1024
+
+                mse = np.mean((img_8bit.astype(np.float32) - jpeg_img.astype(np.float32)) ** 2)
+                psnr = 10 * np.log10((255 ** 2) / mse) if mse > 0 else float('inf')
+
+                compression_data.append({
+                    'quality': q,
+                    'size_kb': jpeg_size,
+                    'psnr': psnr,
+                    'mse': mse
+                })
+
+                print(f"    Qualité {q}: Taille = {jpeg_size:.2f} KB, PSNR = {psnr:.2f} dB")
+            print(f"    PNG (sans perte): Taille = {png_size:.2f} KB")
+
+            create_size_vs_quality_graph(compression_data, png_size, os.path.join(output_dir, f"{basename}_size_vs_quality.png"))
 
             # Analyse de plage dynamique
             print("  [D] Analyse de plage dynamique...")
