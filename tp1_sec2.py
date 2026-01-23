@@ -72,6 +72,15 @@ def get_color_masks(pattern_2x2, H, W):
 # Algorithmes de Dématriçage
 # =============================================================================
 
+def select_kernel(color: str):
+    if color == 'R' or color == 'B':
+        return np.array([[1, 2, 1],
+                         [2, 4, 2],
+                        [1, 2, 1]], dtype=np.float32) * 0.25
+    else:
+        return np.array([[0, 1, 0],
+                         [1, 4, 1],
+                        [0, 1, 0]], dtype=np.float32) * 0.25
 
 def demosaic_bilinear(raw_data, pattern_2x2):
     """
@@ -93,10 +102,18 @@ def demosaic_bilinear(raw_data, pattern_2x2):
 
     # `masks` est un dictionnaire avec les masques booléens pour 'R', 'G', 'B'
     # Indice: faites une convolution 2D avec les noyaux appropriés pour chaque canal.
+    for idx, color in enumerate("RGB"):
+        mask = masks[color].astype(np.float32)
+        channel_data = raw_data * mask
 
-    raise NotImplementedError("Demosaic_bilinear à implémenter")
-    
-    return rgb
+        kernel = select_kernel(color)
+
+        interpolated = convolve2d(channel_data, kernel, mode='same', boundary='symm')
+        normalization = convolve2d(mask, kernel, mode='same', boundary='symm')
+        normalization = np.where(normalization > 0, normalization, 1)
+        rgb[:, :, idx] = interpolated / normalization
+
+    return np.clip(rgb, 0.0, 1.0)
 
 
 def demosaic_malvar(raw_data, pattern_2x2):
@@ -150,9 +167,72 @@ def demosaic_malvar(raw_data, pattern_2x2):
     # Puis appliquer les convolutions appropriées selon les positions du motif.
     # =========================================================================
 
-    raise NotImplementedError("Malvar-He-Cutler non implémenté")
+    kernel_g_at_rb = np.array([
+        [0,  0, -1,  0,  0],
+        [0,  0,  2,  0,  0],
+        [-1, 2,  4,  2, -1],
+        [0,  0,  2,  0,  0],
+        [0,  0, -1,  0,  0]
+    ], dtype=np.float32) / 8
 
-    return rgb
+    kernel_rb_at_g_same_row = np.array([
+        [0, 0, 0.5, 0, 0],
+        [0, -1, 0, -1, 0],
+        [-1, 4, 5, 4, -1],
+        [0, -1, 0, -1, 0],
+        [0, 0, 0.5, 0, 0]
+    ], dtype=np.float32) / 8
+
+    kernel_rb_at_g_same_col = np.array([
+        [0, 0, -1, 0, 0],
+        [0, -1, 4, -1, 0],
+        [0.5, 0, 5, 0, 0.5],
+        [0, -1, 4, -1, 0],
+        [0, 0, -1, 0, 0]
+    ], dtype=np.float32) / 8
+
+    kernel_rb_at_opposite = np.array([
+        [0, 0, -1.5, 0, 0],
+        [0, 2, 0, 2, 0],
+        [-1.5, 0, 6, 0, -1.5],
+        [0, 2, 0, 2, 0],
+        [0, 0, -1.5, 0, 0]
+    ], dtype=np.float32) / 8
+
+    # parity within the 2x2 pattern
+    color_parities = {}
+    for i in range(2):
+        for j in range(2):
+            color = pattern_2x2[i][j]
+            if color not in color_parities:
+                color_parities[color] = (i, j)
+
+    # interpolate G at R/B positions
+    g_interpolated_at_rb = convolve2d(raw_data, kernel_g_at_rb, mode='same', boundary='symm')
+    rgb[:, :, 1] = np.where(masks['G'], raw_data, g_interpolated_at_rb)
+
+    # interpolate R and B channels
+    for color, opposite in [('R', 'B'), ('B', 'R')]:
+        idx = 0 if color == 'R' else 2
+
+        row_parity, col_parity = color_parities[color]
+
+        y_indices, x_indices = np.meshgrid(np.arange(H), np.arange(W), indexing='ij')
+        mask_color = masks[color]
+        mask_g = masks['G']
+
+        mask_g_same_row = mask_g & (y_indices % 2 == row_parity)
+        mask_g_same_col = mask_g & (x_indices % 2 == col_parity)
+
+        convolution_g_same_row = convolve2d(raw_data, kernel_rb_at_g_same_row, mode='same', boundary='symm')
+        convolution_g_same_col = convolve2d(raw_data, kernel_rb_at_g_same_col, mode='same', boundary='symm')
+        convolution_opposite = convolve2d(raw_data, kernel_rb_at_opposite, mode='same', boundary='symm')
+        rgb[:, :, idx] = np.where(mask_color, raw_data,
+                                np.where(mask_g_same_row, convolution_g_same_row,
+                                         np.where(mask_g_same_col, convolution_g_same_col,
+                                                  convolution_opposite)))
+
+    return np.clip(rgb, 0.0, 1.0)
 
 
 # =============================================================================
@@ -246,6 +326,10 @@ def generate_report(results, output_dir):
         )
 
         content += section(basename, section_content)
+
+        discussion = """
+        """
+        content += section("Discussion", discussion)
 
     html = html_document(
         "TP1 - Section 2",
