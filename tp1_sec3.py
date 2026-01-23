@@ -75,7 +75,25 @@ def find_neutral_region(image, region_size=11):
     # TODO: Implémenter la sélection automatique de région neutre
     # =========================================================================
 
-    raise NotImplementedError("Sélection automatique de région neutre à implémenter")
+    step = max(region_size, 20)
+    height, width, _ = image.shape
+    best_score = -np.inf
+    best_pos = (height // 2, width // 2)
+
+    for y in range(0, height - region_size, step):
+        for x in range(0, width - region_size, step):
+            region = image[y:y + region_size, x:x + region_size, :]
+            mean_rgb = np.mean(region, axis=(0, 1))
+            luminosity = 0.299 * mean_rgb[0] + 0.587 * mean_rgb[1] + 0.114 * mean_rgb[2]
+            neutrality = 1.0 / (1.0 + np.std(mean_rgb) * 10)
+            score = luminosity * neutrality
+
+            if luminosity > 0.2 and score > best_score:
+                best_score = score
+                best_pos = (y + region_size // 2, x + region_size // 2)
+
+    return best_pos
+
 
 
 def white_balance_auto_neutral(image, region_size=11, target_gray=0.5):
@@ -110,8 +128,26 @@ def white_balance_auto_neutral(image, region_size=11, target_gray=0.5):
     # =========================================================================
 
     neutral_pos = find_neutral_region(image, region_size)
+    half_size = region_size // 2
+    y, x = neutral_pos
 
-    raise NotImplementedError("Balance des blancs automatique à implémenter")
+    y_start = max(0, y - half_size)
+    y_end = min(image.shape[0], y + half_size + 1)
+    x_start = max(0, x - half_size)
+    x_end = min(image.shape[1], x + half_size + 1)
+    region = image[y_start:y_end, x_start:x_end, :]
+
+    mean_rgb = np.mean(region, axis=(0, 1))
+    multipliers = (
+        target_gray / mean_rgb[0],
+        target_gray / mean_rgb[1],
+        target_gray / mean_rgb[2],
+    )
+    corrected = image.copy()
+    for c in range(3):
+        corrected[:, :, c] *= multipliers[c]
+
+    return np.clip(corrected, 0, 1), multipliers, neutral_pos
 
 
 def white_balance_grey_world(image):
@@ -141,7 +177,18 @@ def white_balance_grey_world(image):
     # TODO: Implémenter l'algorithme Grey World
     # =========================================================================
 
-    raise NotImplementedError("Grey World à implémenter")
+    mean_rgb = np.mean(image, axis=(0, 1))
+    mean_g = mean_rgb[1]
+    multipliers = (
+        mean_g / mean_rgb[0],
+        mean_g / mean_rgb[1],
+        mean_g / mean_rgb[2],
+    )
+    corrected = image.copy()
+    for c in range(3):
+        corrected[:, :, c] *= multipliers[c]
+
+    return np.clip(corrected, 0, 1), multipliers
 
 
 def white_balance_camera(image, camera_wb):
@@ -288,6 +335,8 @@ def generate_report(results, output_dir):
 
         content += section(basename, section_content)
 
+    discussion = """ """
+    content += section("Discussion", discussion)
     html = html_document(
         "TP1 - Section 3",
         "Balance des Blancs (White Balance)",
