@@ -310,6 +310,12 @@ def generate_report(results, output_dir):
 
         content += section(basename, section_content)
 
+    discussion = """
+    Puisque cette section est déjà complétée avec le code de base, aucune intelligence articielle n'a été utilisée.
+    Pour les 
+    """
+    content += section("Discussion", discussion)
+
     html = html_document(
         "TP1 - Section 1",
         "Chargement et Compréhension des Données RAW",
