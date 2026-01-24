@@ -108,8 +108,8 @@ def demosaic_bilinear(raw_data, pattern_2x2):
 
         kernel = select_kernel(color)
 
-        interpolated = convolve2d(channel_data, kernel, mode='same', boundary='symm')
-        normalization = convolve2d(mask, kernel, mode='same', boundary='symm')
+        interpolated = convolve2d(channel_data, kernel, mode='same')
+        normalization = convolve2d(mask, kernel, mode='same')
         normalization = np.where(normalization > 0, normalization, 1)
         rgb[:, :, idx] = interpolated / normalization
 

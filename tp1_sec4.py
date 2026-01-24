@@ -275,10 +275,13 @@ def generate_report(results, output_dir):
     # Texte d'introduction pour la section 1
     sec1_content += subsection(
         "Introduction",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4fc3f7;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Décrivez ici votre compréhension du format RAW, '
-        'du motif de Bayer, et de la normalisation des données brutes.</p>'
-        '</div>'
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4fc3f7;">
+        <p style="color: #a0a0a0; font-style: italic;">
+            Le format RAW des données consiste en une matrice de pixels contenant des intensités lumineuses, encodées sur 12 à 14 bits. Grâce au filtre de Bayer, ces données sont organisées selon une mosaïque dans laquelle chaque pixel ne mesure qu’une seule composante de couleur : rouge, vert ou bleu. Le filtre de Bayer est placé devant le capteur d’une caméra et permet de reconstruire une image couleur à partir de données ne contenant que des mesures d’intensité lumineuse. Il répartit les filtres de couleur selon un motif périodique 2×2, tel que RGGB, BGGR, GRBG ou GBRG. Tous ces motifs contiennent deux fois plus de pixels verts que de pixels rouges ou bleus, puisque l’œil humain est plus sensible à la couleur verte. On normalise ensuite les données afin de les standardiser, en les ramenant sur une même échelle (typiquement [0,1]). Cette étape permet de maintenir une représentation linéaire cohérente entre les images et de faciliter les calculs lors du traitement numérique (dématriçage, balance des blancs, correction couleur).
+        </p>
+        </div>
+        """
     )
     
     for basename in basenames:
@@ -299,10 +302,19 @@ def generate_report(results, output_dir):
     # Analyse et observations
     sec1_content += subsection(
         "Analyse et observations",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4fc3f7;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Décrivez vos observations sur les métadonnées extraites, '
-        'le motif de Bayer, et la normalisation.</p>'
-        '</div>'
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4fc3f7;">
+            <p style="color: #a0a0a0; font-style: italic;">
+                Puisque cette section est déjà complétée avec le code de base, aucune intelligence articielle n'a été utilisée pour réaliser cette partie d'implémentation. Cependant, concernant la partie discussion, l'intelligence artificielle a été utilisée pour corriger les erreurs d'orthographe.
+    
+                Analysons maintenant les données extraites. Nous pouvons observer que selon les images traitées, le motif de Bayer peut varier, selon le capteur utilisé.
+                La profondeur de bits inférée varie entre 12 et 14 bits comme attendu pour des images RAW. Nous pouvons observer que la mosaïque de Bayer varie en intensité selon les images et plus particulièrement la section de l'image que nous avons zoomée.
+                Le balance des blancs montre des variations intéressantes selon les conditions dans lesquelles les images ont été capturées et les matrices RGB-XYZ et de couleur fournissent des informations cruciales pour la conversion des couleurs.
+                
+            </p>
+        </div>
+        
+        """
     )
     
     content += section("Section 1: Chargement et Compréhension des Données RAW", sec1_content, icon="📷")
@@ -315,10 +327,21 @@ def generate_report(results, output_dir):
     # Texte d'introduction pour la section 2
     sec2_content += subsection(
         "Introduction",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Expliquez le processus de dématriçage, '
-        'les différences entre les méthodes bilinéaire et Malvar-He-Cutler, et les artefacts observés.</p>'
-        '</div>'
+        """
+         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">
+        <p style="color: #a0a0a0; font-style: italic;">
+              Chaque pixel contient uniquement une couleur, donc le dématriçage permet d’interpoler les couleurs manquantes à l’aide des valeurs des pixels voisins. La valeur manquante est estimée à chaque position de pixel. En classe, deux méthodes ont été présentées pour effectuer ce processus : l’interpolation bilinéaire et la méthode de Malvar–He–Cutler (MHC).
+        </p>
+        <p style="color: #a0a0a0; font-style: italic;">
+            L’interpolation bilinéaire estime la valeur d’un pixel en calculant la moyenne des pixels voisins directs pour chaque canal de couleur. Cette approche est simple et rapide, mais elle peut générer certains artéfacts, comme des franges de couleur ou des effets de “zipper” (fermetures éclair) le long des contours.
+        </p>
+       <p style="color: #a0a0a0; font-style: italic;">
+            La méthode de Malvar–He–Cutler améliore la qualité de l’image en utilisant un gradient basé sur le Laplacien. Elle commence par une interpolation bilinéaire classique, puis applique des corrections inter-canaux aux canaux rouge et bleu, en se basant sur le canal vert. Cette approche permet de réduire les artéfacts de couleur et les contours indésirables tout en préservant les textures fines et les détails de l’image.
+        </p>
+        </div>
+        
+        """
+
     )
     
     for basename in basenames:
