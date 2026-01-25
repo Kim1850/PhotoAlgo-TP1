@@ -599,7 +599,7 @@ def generate_report(results, output_dir):
         """
         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">
             <p style="color: #a0a0a0; font-style: italic;">
-               Nous pouvons observer qu’avec le mappage tonal linéaire, de nombreuses valeurs sont perdues, car elles sont écrêtées à 1. Avec l’opérateur **Reinhard**, il est possible de conserver les valeurs représentant des régions très lumineuses ou très sombres tout en maintenant les détails dans l’image. Concernant l’**OETF**, l’image devient plus représentative de la réalité, avec une meilleure perception des régions lumineuses.
+               Nous pouvons observer qu’avec le mappage tonal linéaire, de nombreuses valeurs sont perdues, car elles sont écrêtées à 1. Avec l’opérateur Reinhard, il est possible de conserver les valeurs représentant des régions très lumineuses ou très sombres tout en maintenant les détails dans l’image. Concernant l’OETF, l’image devient plus représentative de la réalité, avec une meilleure perception des régions lumineuses.
 
                 Nous constatons également que les hautes lumières sont écrasées, tandis que les ombres restent préservées. La plage dynamique est limitée, ce qui implique que l’appareil n’est pas optimal pour des scènes présentant un contraste important.
                 
@@ -659,11 +659,17 @@ def generate_report(results, output_dir):
     # =============================================================================
     conclusion_content = subsection(
         "Conclusion",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffd54f;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Faites une synthèse de votre travail sur les quatre sections. '
-        'Discutez des défis rencontrés, des apprentissages, et des améliorations possibles. '
-        'Comparez vos résultats avec les images de référence.</p>'
-        '</div>'
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffd54f;">
+            <p style="color: #a0a0a0; font-style: italic;">
+                En général l’intelligence artificielle a été utilisée pour m’expliquer des concepts, tels que le white balancing ou certaines métriques comme l'OETF. J’ai eu plus de difficulté à comprendre l’interpolation de Malvar-He-Cutler, malgré la documentation fournie par le professeur, donc l’intelligence artificielle a servi de support. Par ailleurs, l’intelligence artificielle a joué un rôle à  Antidote pour la correction de ce rapport. Je dois admettre que pour certaines figures, l'intelligence artificielle m'a procuré une aide précieuse pour leur création.  
+                
+                Globalement, je n’étais pas familière avec ces processus, donc ce travail fut un apprentissage complet en traitement d’image. Je prévois me documenter davantage et me pratiquer avec de petits exercices les notions apprises à travers les différentes capsules vidéos, pour avoir plus de facilité à les intégrer à l’intérieur d’un travail pratique comme celui-ci. 
+                
+                Comparons les images produites avec les images de références. Nous pouvons constater qu’elles sont très similaires, bien que les images de références ont davantage de contraste et de saturation que les résultats obtenus.
+            </p>
+        </div>
+        """
     )
     
     content += section("Conclusion", conclusion_content, icon="📝")
