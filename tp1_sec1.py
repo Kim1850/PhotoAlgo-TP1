@@ -310,15 +310,6 @@ def generate_report(results, output_dir):
 
         content += section(basename, section_content)
 
-    discussion = """
-    Puisque cette section est déjà complétée avec le code de base, aucune intelligence articielle n'a été utilisée.
-    
-    Analysons maintenant les données extraites. Nous pouvons observer que selon les images traitées, le motif de Bayer peut varier. En effet, nous pouvons observer les 3 modèles suivants : BGGR, RGGB, GRBG.
-    La profondeur de bits inférée varie entre 12 et 14 bits comme attendu pour des images RAW. Nous pouvons observer que la mosaïque de Bayer varie en intensité selon les images et plus particulièrement la section de l'image que nous avons zoomée.
-    Le balance des blancs montre des variations intéressantes selon les conditions dans lesquelles les images ont été capturées et les matrices RGB-XYZ et de couleur fournissent des informations cruciales pour la conversion des couleurs.
-    """
-    content += section("Discussion", discussion)
-
     html = html_document(
         "TP1 - Section 1",
         "Chargement et Compréhension des Données RAW",

@@ -327,10 +327,6 @@ def generate_report(results, output_dir):
 
         content += section(basename, section_content)
 
-    discussion = """
-    """
-    content += section("Discussion", discussion)
-
     html = html_document(
         "TP1 - Section 2",
         "Dématriçage (Demosaicing)",

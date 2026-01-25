@@ -46,7 +46,8 @@ from tp1_rapport import (
     create_oetf_comparison_figure,
     create_dynamic_range_figure,
 )
-
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 
 # =============================================================================
 # Ajustement de Luminosité
@@ -371,10 +372,17 @@ def generate_report(results, output_dir):
     # Analyse et observations
     sec2_content += subsection(
         "Analyse et observations",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Comparez les résultats des différentes méthodes de dématriçage. '
-        'Discutez des métriques de qualité (PSNR, SSIM) et des temps d\'exécution. Identifiez les régions où les artefacts sont les plus visibles.</p>'
-        '</div>'
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">
+            <p style="color: #a0a0a0; font-style: italic;">
+                Globalement, le temps d’exécution diffère entre les deux méthodes, puisque pour la méthode de Malvar–He–Cutler, le temps est environ de 2 à 3 fois plus long. Concernant l’affichage des images, les résultats sont très similaires. On observe toutefois que, pour Malvar–He–Cutler, les contours sont légèrement mieux définis.
+
+                À l’aide de la métrique PSNR, nous pouvons comparer quantitativement les images issues des deux méthodes. On observe que les valeurs varient entre 40 et 57 dB, ce qui indique que les images reconstruites sont proches de la référence.
+                
+                En ce qui concerne la métrique SSIM, la plus petite valeur de l’indice est d’environ 0,95. Nous pouvons donc conclure que la structure des images traitées par interpolation bilinéaire et par la méthode de Malvar–He–Cutler est très similaire.
+            </p>
+        </div>
+        """
     )
     
     content += section("Section 2: Dématriçage (Demosaicking)", sec2_content, icon="🎨")
@@ -387,10 +395,23 @@ def generate_report(results, output_dir):
     # Texte d'introduction pour la section 3
     sec3_content += subsection(
         "Introduction",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e94560;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Expliquez le concept de balance des blancs, '
-        'les différents algorithmes implémentés (région neutre, Grey World, caméra), et leurs avantages/inconvénients.</p>'
-        '</div>'
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e94560;">
+            <p style="color: #a0a0a0; font-style: italic;">
+                La balance des blancs consiste à ajuster une image pour que les couleurs soient perçues comme neutres par l’œil humain, c’est-à-dire qu’elles reflètent correctement l’éclairage de la scène. Différents algorithmes existent pour effectuer ce traitement.
+        
+                L’algorithme de la région neutre consiste à identifier une zone de l’image considérée neutre et lumineuse, caractérisée par des écarts-types faibles entre les trois canaux de couleur. Cette région est ensuite utilisée pour calculer des multiplicateurs pour chaque canal, qui sont appliqués à l’ensemble de l’image afin d’ajuster les couleurs.
+                
+                L’hypothèse du Grey World suppose que la moyenne de chaque canal de couleur devrait tendre vers la même valeur, correspondant à un gris neutre.
+                
+                L’hypothèse du White World suppose que la région la plus brillante de l’image devrait tendre vers le blanc. On en déduit un facteur d’échelle qui est appliqué à tous les pixels pour rendre cette zone neutre, ce qui ajuste également le reste de l’image.
+                
+                L’avantage de ces méthodes est qu’elles sont rapides et simples, car elles appliquent le même traitement indépendamment de l’image.
+                
+                Le principal inconvénient apparaît lorsque l’image ne contient pas de bonne région neutre ou si l’éclairage est particulier. Dans ce cas, les algorithmes peuvent mal corriger les couleurs, et le reste de l’image peut être affecté par un ajustement inapproprié.
+            </p>
+        </div>
+        """
     )
     
     for basename in basenames:
@@ -436,10 +457,17 @@ def generate_report(results, output_dir):
     # Texte d'introduction pour la section 4
     sec4_content += subsection(
         "Introduction",
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Expliquez le besoin du mappage tonal, '
-        'les différents opérateurs (linéaire, Reinhard), l\'OETF sRGB, et l\'analyse de la plage dynamique.</p>'
-        '</div>'
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">
+            <p style="color: #a0a0a0; font-style: italic;">
+                Il existe une différence entre la plage dynamqiue capturée par les capteurs d’un appareil photo et celle qu’il est possible de représenter sur un écran. Ce faisant, le mappage tonal permet de compresser la plage dynamique élevée pour adapter les intensités lumineuses à un espace plus restreint en préservant le plus de détails possibles dans les zones sombres et lumineuses.
+        
+                Différents opérateurs de mappage tonal peuvent être utilisés pour effectuer ce traitement. L’opérateur linéaire n’effectue aucune compression. les valeurs sont mises à l’échelle et celles plus grandes que 1 sont écrêtées dans la conversion finale. Cette méthode est simple, mais elle entraîne une perte importante d’information dans les hautes lumières et les ombres. L’opérateur Reinhard, quant à lui, applique une transformation n’est pas linéaire pour compresser progressivement l’espace sans toutefois perdre autant d’information qu’avec l’opérateur linéraire. Ça permet de voir les régions plus sombres ou plus lumineuses.
+                
+                L’OETF sRGB permet de transformer une valeur linéaire en valeur encodée sRGB pour par suite l’afficher ou la stocker. Elle permet de transformer l’image afin qu’elle correspondent à la sensibilité de l’oeil humain lors de son affichage sur un écran ou pour la stocker dans un format standard.
+            </p>
+        </div>
+        """
     )
     
     # Concepts et algorithmes
@@ -519,7 +547,23 @@ def generate_report(results, output_dir):
                 "Image finale",
                 figure(f"{basename}_final.jpg", "Image JPEG finale (qualité 95)"),
             )
-        
+
+        # jpeg quality comparaison
+        jpeg_comp_path = os.path.join(sec4_dir, f"{basename}_jpeg_artefact.png")
+        if os.path.exists(jpeg_comp_path):
+            sec4_img_content += subsection(
+                "Comparaison des artefacts JPEG",
+                figure(f"{basename}_jpeg_artefact.png", "Comparaison des artefacts JPEG à différentes qualités")
+            )
+
+        # Add the new graph for size vs quality here
+        size_vs_quality_path = os.path.join(sec4_dir, f"{basename}_size_vs_quality.png")
+        if os.path.exists(size_vs_quality_path):
+            sec4_img_content += subsection(
+                "Taille du fichier vs Qualité JPEG",
+                figure(f"{basename}_size_vs_quality.png", "Graphique montrant la taille du fichier JPEG en fonction de la qualité, comparé au PNG sans perte.")
+            )
+
         # Figure: Plage dynamique
         dr_path = os.path.join(sec4_dir, f"{basename}_dynamic_range.png")
         if os.path.exists(dr_path):
@@ -551,12 +595,18 @@ def generate_report(results, output_dir):
     
     # Analyse et observations
     sec4_content += subsection(
-        "Analyse et observations", 
-        '<div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">'
-        '<p style="color: #a0a0a0; font-style: italic;">À remplir: Comparez les résultats des différents opérateurs de mappage tonal. '
-        'Discutez de l\'impact de l\'OETF sur l\'apparence de l\'image. Analysez la plage dynamique et les zones écrêtées/écrasées. '
-        'Discutez des artefacts JPEG à différentes qualités.</p>'
-        '</div>'
+        "Analyse et observations",
+        """
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #778da9;">
+            <p style="color: #a0a0a0; font-style: italic;">
+               Nous pouvons observer qu’avec le mappage tonal linéaire, de nombreuses valeurs sont perdues, car elles sont écrêtées à 1. Avec l’opérateur **Reinhard**, il est possible de conserver les valeurs représentant des régions très lumineuses ou très sombres tout en maintenant les détails dans l’image. Concernant l’**OETF**, l’image devient plus représentative de la réalité, avec une meilleure perception des régions lumineuses.
+
+                Nous constatons également que les hautes lumières sont écrasées, tandis que les ombres restent préservées. La plage dynamique est limitée, ce qui implique que l’appareil n’est pas optimal pour des scènes présentant un contraste important.
+                
+                Enfin, nous pouvons observer que la quantité d’artéfacts est inversement proportionnelle à la qualité de l’image : plus les artéfacts sont présents, moins l’image est fidèle à la scène originale.
+            </p>
+        </div>
+        """
     )
     
     content += section("Section 4: Mappage Tonal et Encodage d'Affichage", sec4_content, icon="🎨")
@@ -634,11 +684,40 @@ def generate_report(results, output_dir):
 # Traitement Principal
 # =============================================================================
 
+def visualize_jpeg_artifacts(original, jpeg_images, compression_data, png_size, output_path, title="Artefacts de Compression JPEG"):
+    qualities = sorted(jpeg_images.keys())
+    num_qualities = len(qualities)
+
+    fig = plt.figure(figsize=(10, 6))
+    gs = GridSpec(3, num_qualities, figure=fig, hspace=0.3, wspace=0.2)
+
+    for i, quality in enumerate(qualities):
+        ax = fig.add_subplot(gs[0, i])
+        ax.imshow(jpeg_images[quality])
+        size_kb = next(d['size_kb'] for d in compression_data if d['quality'] == quality)
+        ax.set_title(f"Qualité {quality}\nTaille: {size_kb:.1f} KB", fontsize=10)
+        ax.axis('off')
+
+    for i, quality in enumerate(qualities):
+        ax = fig.add_subplot(gs[1, i])
+
+        diff = np.abs(original.astype(float) - jpeg_images[quality].astype(float))
+
+        diff_amplified = np.clip(diff * 10, 0, 255).astype(np.uint8)
+        ax.imshow(diff_amplified)
+        ax.set_title(f"Artefacts (×10)", fontsize=11)
+        ax.axis('off')
+
+    fig.suptitle(title, fontsize=16, fontweight='bold', y=0.995)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+    print(f"    → Visualisation des artefacts: {output_path}")
+
 def create_size_vs_quality_graph(compression_data, png_size, output_path, title="Taille vs Qualité"):
     """
     Crée un graphique montrant la taille du fichier en fonction de la qualité JPEG.
     """
-    import matplotlib.pyplot as plt
 
     qualities = [d['quality'] for d in compression_data]
     sizes = [d['size_kb'] for d in compression_data]
@@ -752,39 +831,41 @@ def process_display_encoding(
             # - Visualiser les artefacts de compression
             # - Créer un graphique taille vs qualité
             print("  [!] Analyse JPEG à implémenter par l'étudiant")
-            qualities = [95, 75, 50, 25]
+            jpeg_qualities = [95, 75, 50, 25]
             compression_data = []
 
             # png without lost
-            png_path = os.path.join(output_dir, f"{basename}_reference.png")
-            Image.fromarray(img_8bit).save(png_path, "PNG")
-            png_size = os.path.getsize(png_path) / 1024
+            png_path = os.path.join(output_dir, f"{basename}_lossless.png")
+            save_png(img_8bit, png_path)
+            png_size_kb = os.path.getsize(png_path) / 1024
+            print(f"    PNG (sans perte): {png_size_kb:.1f} KB")
 
             jpeg_images = {}
-            for q in qualities:
-                jpeg_path = os.path.join(output_dir, f"{basename}_reference_{q}.jpg")
-                save_jpeg(img_8bit, jpeg_path, quality=q)
+            for quality in jpeg_qualities:
+                jpeg_path = os.path.join(output_dir, f"{basename}_q{quality}.jpg")
+                save_jpeg(img_8bit, jpeg_path, quality=quality)
+                jpeg_size_kb = os.path.getsize(jpeg_path) / 1024
+                compression_data.append({"quality": quality, "size_kb": jpeg_size_kb})
+                print(f"    JPEG Qualité {quality}: {jpeg_size_kb:.1f} KB")
+                jpeg_images[quality] = np.array(Image.open(jpeg_path))
 
-                # artefacts compression visualization
-                jpeg_img = np.array(Image.open(jpeg_path))
-                jpeg_images[q] = jpeg_img
+            # artefacts visualization
+            visualize_jpeg_artifacts(
+                img_8bit,
+                jpeg_images,
+                compression_data,
+                png_size_kb,
+                os.path.join(output_dir, f"{basename}_jpeg_artefact.png"),
+                title=f"Artefacts de Compression JPEG - {basename}",
+            )
 
-                jpeg_size = os.path.getsize(jpeg_path) / 1024
-
-                mse = np.mean((img_8bit.astype(np.float32) - jpeg_img.astype(np.float32)) ** 2)
-                psnr = 10 * np.log10((255 ** 2) / mse) if mse > 0 else float('inf')
-
-                compression_data.append({
-                    'quality': q,
-                    'size_kb': jpeg_size,
-                    'psnr': psnr,
-                    'mse': mse
-                })
-
-                print(f"    Qualité {q}: Taille = {jpeg_size:.2f} KB, PSNR = {psnr:.2f} dB")
-            print(f"    PNG (sans perte): Taille = {png_size:.2f} KB")
-
-            create_size_vs_quality_graph(compression_data, png_size, os.path.join(output_dir, f"{basename}_size_vs_quality.png"))
+            # create size vs quality graph
+            create_size_vs_quality_graph(
+                compression_data,
+                png_size_kb,
+                os.path.join(output_dir, f"{basename}_size_vs_quality.png"),
+                title=f"Taille du fichier vs Qualité JPEG - {basename}"
+            )
 
             # Analyse de plage dynamique
             print("  [D] Analyse de plage dynamique...")
